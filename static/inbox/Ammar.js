@@ -1,0 +1,1 @@
+window.__fileContent = "hello i am Ammar";

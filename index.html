@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Volt MD - Advanced Markdown Viewer like Obsidian">
+    <meta name="theme-color" content="#1c1b22">
+    <title>Volt MD - Smart Markdown Viewer</title>
+    <link rel="stylesheet" href="volt-core/libs/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="volt-core/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar" role="navigation" aria-label="File explorer">
+            <div class="sidebar-header">
+                <span class="sidebar-title">Explorer</span>
+                <div class="sidebar-actions">
+                    <button id="tree-collapse-all" class="toggle-btn" title="Collapse All" aria-label="Collapse All">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
+                            <path d="M2 2v20H22V2z" />
+                        </svg>
+                    </button>
+                    <button id="reveal-current-file" class="toggle-btn" title="Reveal Current File"
+                        aria-label="Reveal Current File">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                        </svg>
+                    </button>
+                    <button id="sidebar-close" class="toggle-btn" title="Close sidebar" aria-label="Close sidebar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6 6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        aria-hidden="true">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" id="search-input" class="search-input" placeholder="Search files..."
+                        aria-label="Search files">
+                </div>
+                <div id="search-results" class="search-results" role="region" aria-label="Search results"></div>
+                <div id="file-tree" class="file-tree" role="tree"></div>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <main class="main-content" role="main">
+            <header class="content-header">
+                <div class="header-left">
+                    <button id="sidebar-toggle" class="toggle-btn" title="Toggle Files (Ctrl+S)"
+                        aria-label="Toggle sidebar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12h18M3 6h18M3 18h18" />
+                        </svg>
+                    </button>
+                    <span id="file-name-display" class="file-name-display">Select a file</span>
+                </div>
+
+                <div class="header-actions">
+                    <div class="header-search">
+                        <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                        <input type="text" id="content-search-input" class="header-search-input"
+                            placeholder="Search in file... (Ctrl+F)" aria-label="Search in file">
+                    </div>
+
+                    <button class="theme-toggle" id="theme-toggle-btn" title="Toggle Theme (Ctrl+D)"
+                        aria-label="Toggle dark mode">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5" />
+                            <path
+                                d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                        </svg>
+                    </button>
+
+                    <button id="toc-toggle" class="toggle-btn" title="Toggle Table of Contents" aria-label="Toggle TOC">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div id="content" class="markdown-body">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14,2 14,8 20,8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10,9 9,9 8,9" />
+                        </svg>
+                        <p>No file selected</p>
+                        <p class="empty-state-hint">Select a file from the explorer to view its content</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="float-window-overlay" id="float-overlay"></div>
+        <div class="float-window" id="float-window">
+            <div class="float-window-header">
+                <span class="float-window-title" id="float-title">Preview</span>
+                <button class="float-window-close" id="float-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="float-window-content" id="float-content"></div>
+        </div>
+
+        <aside class="toc-sidebar" id="toc-sidebar" role="complementary" aria-label="Document outline">
+            <div class="sidebar-handle"></div>
+            <div class="sidebar-topbar">
+                <div class="topbar-content">
+                    <label class="theme-toggle-container">
+                        <input type="checkbox" class="theme-toggle-input" id="sidebar-theme-toggle">
+                        <div class="toggle-background"></div>
+                    </label>
+                </div>
+                <button class="clickable-icon sidebar-collapse-icon" id="right-sidebar-collapse"
+                    aria-label="Collapse sidebar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M21 3H3C1.89543 3 1 3.89543 1 5V19C1 20.1046 1.89543 21 3 21H21C22.1046 21 23 20.1046 23 19V5C23 3.89543 22.1046 3 21 3Z" />
+                        <path d="M10 4V20" />
+                        <path d="M4 7H7" />
+                        <path d="M4 10H7" />
+                        <path d="M4 13H7" />
+                    </svg>
+                </button>
+            </div>
+            <div class="sidebar-content-wrapper">
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-sidebar-tab="graph">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16">
+                            <circle cx="12" cy="18" r="3" />
+                            <circle cx="6" cy="6" r="3" />
+                            <circle cx="18" cy="6" r="3" />
+                            <path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9" />
+                            <path d="M12 12v3" />
+                        </svg>
+                        Graph
+                    </button>
+                    <button class="sidebar-tab" data-sidebar-tab="toc">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                        Contents
+                    </button>
+                    <button class="sidebar-tab" data-sidebar-tab="settings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+                        </svg>
+                        Settings
+                    </button>
+                </div>
+                <div class="leaf-content">
+                    <div class="sidebar-panel active" id="panel-graph">
+                        <div class="graph-view-wrapper">
+                            <div class="breadcrumbs" id="breadcrumbs"></div>
+                            <div class="graph-canvas-container">
+                                <div id="network"></div>
+                                <div class="graph-empty-state">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                        width="40" height="40">
+                                        <circle cx="12" cy="18" r="3" />
+                                        <circle cx="6" cy="6" r="3" />
+                                        <circle cx="18" cy="6" r="3" />
+                                        <path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9" />
+                                        <path d="M12 12v3" />
+                                    </svg>
+                                    <p>Interactive Graph</p>
+                                    <span>Click nodes to navigate</span>
+                                </div>
+                            </div>
+                            <div class="links-section" id="outgoing-section">
+                                <div class="links-header">Outgoing Links</div>
+                                <div class="links-list" id="outgoing-list"></div>
+                            </div>
+                            <div class="backlinks-section" id="backlinks-section">
+                                <div class="backlinks-header">Backlinks</div>
+                                <div class="backlinks-list" id="backlinks-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-panel" id="panel-toc">
+                        <div class="tree-container" id="outline">
+                            <div id="toc-content" class="toc-panel-content"></div>
+                        </div>
+                    </div>
+                    <div class="sidebar-panel" id="panel-settings">
+                        <div class="settings-section">
+                            <div class="settings-group">
+                                <label class="settings-label">Primary Color</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="setting-primary-color" class="color-picker" value="#228be6">
+                                    <span class="color-value" id="primary-color-value">#228be6</span>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Font Size</label>
+                                <select id="setting-font-size" class="settings-select">
+                                    <option value="14">Small (14px)</option>
+                                    <option value="16" selected>Medium (16px)</option>
+                                    <option value="18">Large (18px)</option>
+                                    <option value="20">Extra Large (20px)</option>
+                                    <option value="22">Huge (22px)</option>
+                                </select>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Font Weight</label>
+                                <select id="setting-font-weight" class="settings-select">
+                                    <option value="300">Light</option>
+                                    <option value="400" selected>Regular</option>
+                                    <option value="500">Medium</option>
+                                    <option value="600">Semi Bold</option>
+                                    <option value="700">Bold</option>
+                                </select>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Font Family</label>
+                                <select id="setting-font-family" class="settings-select">
+                                    <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+                                        System Default</option>
+                                    <option value="'Inter', -apple-system, BlinkMacSystemFont, sans-serif">Inter
+                                    </option>
+                                    <option value="'Georgia', serif">Georgia</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="'Arial', sans-serif">Arial</option>
+                                    <option value="sans-serif">Sans Serif</option>
+                                    <option value="serif">Serif</option>
+                                    <option value="monospace">Monospace</option>
+                                </select>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Theme</label>
+                                <div class="theme-buttons">
+                                    <button class="theme-btn" data-theme="light">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            width="16" height="16">
+                                            <circle cx="12" cy="12" r="5" />
+                                            <path
+                                                d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                                        </svg>
+                                        Light
+                                    </button>
+                                    <button class="theme-btn active" data-theme="dark">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            width="16" height="16">
+                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                                        </svg>
+                                        Dark
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Export to PDF</label>
+                                <button id="export-pdf-btn" class="settings-button">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        width="16" height="16">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <line x1="16" y1="13" x2="8" y2="13" />
+                                        <line x1="16" y1="17" x2="8" y2="17" />
+                                        <polyline points="10 9 9 9 8 9" />
+                                    </svg>
+                                    Export PDF
+                                </button>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Reset Settings</label>
+                                <button id="reset-settings-btn" class="settings-button danger">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        width="16" height="16">
+                                        <polyline points="1 4 1 10 7 10" />
+                                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                                    </svg>
+                                    Reset All
+                                </button>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Custom JavaScript</label>
+                                <textarea id="setting-custom-js" class="settings-textarea"
+                                    placeholder="// Enter your custom JavaScript here..."></textarea>
+                                <button id="save-custom-js-btn" class="settings-button" style="margin-top: 8px;">
+                                    Save Custom JS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="volt-core/libs/marked.min.js"></script>
+    <script src="volt-core/libs/highlight.min.js"></script>
+    <script src="volt-core/libs/mermaid.min.js"></script>
+    <script src="volt-core/libs/vis-network.min.js"></script>
+    <link rel="stylesheet" href="volt-core/libs/katex.min.css">
+    <script src="volt-core/libs/katex.min.js"></script>
+</body>
+<script src="volt-core/app.js"></script>
+<script src="volt-core/base.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const baseUrl = params.get('baseUrl') || '';
+        window.voltMD = new VoltMDCore({
+            jsonUrl: 'volt-core/base.js',
+            baseUrl: baseUrl
+        });
+    });
+</script>
+
+</html>

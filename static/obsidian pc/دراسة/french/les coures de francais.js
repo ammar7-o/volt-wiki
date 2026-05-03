@@ -1,0 +1,1 @@
+window.__fileContent = "---\ndg-publish: true\n---\n\n### **Cours linguistiques**\n\n1. **Les champs lexicaux**\n2. **Les registres de langue**\n3. **La focalisation ou point de vue**\n4. **L’énonciation**\n5. **Les figures de style**\n6. **Les niveaux de langue**\n7. **Récit et discours**\n8. **Le discours rapporté**\n9. **11 sujets d’expression écrite**\n    \n";
